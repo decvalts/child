@@ -192,7 +192,7 @@ OptTSOutput." );
 
       // Do storm...
       storm.GenerateStorm( time.getCurrentTime(),
-                           strmNet.getInfilt(), strmNet.getSoilStore() );
+                           &mesh, strmNet.getInfilt(), strmNet.getSoilStore() );  
       if(0) //DEBUG
 	     std::cout<< "Storm: "<< storm.getRainrate() << " " << storm.getStormDuration() << " "
 	          << storm.interstormDur() << std::endl;

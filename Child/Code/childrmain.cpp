@@ -126,7 +126,7 @@ int main( int argc, char **argv )
 
       // Do storm...
       storm.GenerateStorm( time.getCurrentTime(),
-                           strmNet.getInfilt(), strmNet.getSoilStore() );
+                           mesh, strmNet.getInfilt(), strmNet.getSoilStore() );  
 
       strmNet.UpdateNet( time.getCurrentTime(), storm );
 
