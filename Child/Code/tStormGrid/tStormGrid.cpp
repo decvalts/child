@@ -393,9 +393,9 @@ tStormNode::tStormNode( int ) :
 // StormNode constructor for indices and coordinates
 tStormNode::tStormNode( double x_, double y_, const StormNode &orig) :
   layerlist(),
-  ClosestNode(0);
+  ClosestNode(0),
   x(x_), y(y_), z(0.0), sectionZ(0.0), newZ(0.0),
-  i(0), j(0
+  i(0), j(0)
 {
   layerlist = orig.layerlist;
 }

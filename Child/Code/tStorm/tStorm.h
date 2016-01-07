@@ -71,10 +71,10 @@ public:
     bool getOptVar() const;
 	double PTLlength(double x, double y, double a, double b, double c);     // length of point (x,y) to line (ax+by+c=0) 
 	bool optOroPrecip;  // Flag indicating whether orographic precipitation is used  
-  void TurnOnOutput( const tInputFile& );
-  void TurnOffOutput();
-  inline void setRand( tRand* ptr ) {rand = ptr;}
-  void setRainrate( double );
+    void TurnOnOutput( const tInputFile& );
+    void TurnOffOutput();
+    inline void setRand( tRand* ptr ) {rand = ptr;}
+    void setRainrate( double );
 
 private:
     double ExpDev() const;
