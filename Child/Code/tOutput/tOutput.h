@@ -203,7 +203,6 @@ private:
    std::ofstream netofs;     // Downstream neighbor IDs
    std::ofstream slpofs;     // Slopes in the direction of flow
    std::ofstream qofs;       // Discharge (surface)
-   std::ofstream pofs;       // Precipitation
    std::ofstream layofs;     // Layer info
    std::ofstream surfofs;    // Surfer style x,y,z file with top layer properties in columns of triangular nodes
    std::ofstream texofs;     // Texture info
@@ -278,7 +277,6 @@ inline void tLOutput<tSubNode>::WriteActiveNodeData( tSubNode *cn )
 	      << cn->getLayerCtime(i) << ' ' << cn->getLayerRtime(i) << '\n';
   }
 
-  pofs << cn->getPreci() << '\n';
   drareaofs << cn->getDrArea() << '\n';
   if( cn->getDownstrmNbr() )
     netofs << cn->getDownstrmNbr()->getID() << '\n';
