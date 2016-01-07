@@ -62,8 +62,8 @@ class tStorm
 {
 public:
     tStorm( bool optVariable = true );
-  tStorm( const tInputFile &, tRand *, bool no_write_mode = false );
-  tStorm( const tStorm& );
+    tStorm( const tInputFile &, tRand *, bool no_write_mode = false );
+    tStorm( const tStorm& );
     void GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp=0.0, double mind=0.0 ); //add tMesh< tLNode > &meshRef
     double getStormDuration() const;
     double interstormDur() const;
