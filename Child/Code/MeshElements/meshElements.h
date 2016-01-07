@@ -123,6 +123,7 @@ public:
   inline double getX() const;                       // returns x coord
   inline double getY() const;                       // returns y coord
   inline double getZ() const;                       // returns z value
+
   double getVArea() const;                   // returns Voronoi area
   double getVArea_Rcp() const;               // returns 1/Voronoi area
   tBoundary_t getBoundaryFlag() const;               // returns boundary code
@@ -137,6 +138,7 @@ public:
   inline void setX( double );            // sets x coord
   inline void setY( double );            // sets y coord
   inline void setZ( double );            // sets z value
+
   virtual void ChangeZ( double );         // adds or subtracts from the current z value
   void setVArea( double );        // sets Voronoi area
   void setVArea_Rcp( double );    // sets 1 / Voronoi area
@@ -285,6 +287,16 @@ public:
   void UpdateBoundaryStatusForEdgeAndComplement( tEdgeBoundary_t new_boundary_status );
   double CalcLength();               // computes & sets length
   double CalcSlope();                // computes & sets slope
+  double CalcDhDx();                 // computes & sets DhDx 
+  double CalcDhDy();                 // computes & sets DhDy 
+  double CalcDx();                  // computes & sets Dx dest-orignal 
+  double CalcDy();                   // computes & sets Dy dest-orignal
+  double CalcDz();                   // computes & sets Dz dest-orignal 
+  double CalAngle();                 // computes & sets angle between edge and x direction 
+  double getdestX();                 // get dest x value 
+  double getdestY();                 // get dest y value 
+  double getdestZ();                 // get dest z value 
+  tNode * getdest();                 // get pointer of dest node 
   void setCCWEdg( tEdge * edg );     // sets ptr to counter-clockwise neighbor
   void setCWEdg( tEdge * edg );
   void setRVtx( tArray2< double > const &);  // sets coords of Voronoi vertex RH tri
@@ -614,6 +626,7 @@ inline int tNode::getPermID() const {return permid;}
 inline double tNode::getX() const {return x;}
 inline double tNode::getY() const {return y;}
 inline double tNode::getZ() const {return z;}
+
 inline double tNode::getVArea() const {return varea;}
 inline double tNode::getVArea_Rcp() const {return varea_rcp;}
 inline tBoundary_t tNode::getBoundaryFlag() const {return boundary;}
@@ -1130,6 +1143,200 @@ inline double tEdge::CalcLength()
    return len;
 }
 
+/**************************************************************************\
+**
+**  tEdge::CalcDhDx
+**
+**  computes & sets DhDx. 
+**
+**  For orographic precipitation J Han
+\**************************************************************************/
+
+inline double tEdge::CalcDhDx()
+{
+   assert( org!=0 );  // Failure = edge has no origin and/or destination node
+   assert( dest!=0 );
+   double dx = org->getX() - dest->getX();
+   return (slope/len*dx);
+}
+
+
+/**************************************************************************\
+**
+**  tEdge::CalcDhDy
+**
+**  computes & sets DhDy. 
+**
+**  For orographic precipitation J Han
+\**************************************************************************/
+
+
+inline double tEdge::CalcDhDy()
+{
+   assert( org!=0 );  // Failure = edge has no origin and/or destination node
+   assert( dest!=0 );
+   double dy = org->getY() - dest->getY();
+   return (slope/len*dy);
+}
+
+/**************************************************************************\
+**
+**  tEdge::CalcDx
+**
+**  computes & sets Dx dest-orignal 
+**
+**  For orographic precipitation J Han
+\**************************************************************************/
+
+inline double tEdge::CalcDx()
+{
+   assert( org!=0 );  // Failure = edge has no origin and/or destination node
+   assert( dest!=0 );
+   double dx = dest->getX() - org->getX();
+   return (dx);
+}
+
+/**************************************************************************\
+**
+**  tEdge::CalcDy
+**
+**  computes & sets Dy dest-orignal 
+**
+**  For orographic precipitation J Han
+\**************************************************************************/
+
+inline double tEdge::CalcDy()
+{
+   assert( org!=0 );  // Failure = edge has no origin and/or destination node
+   assert( dest!=0 );
+   double dy = dest->getY() - org->getY();
+   return (dy);
+}
+
+/**************************************************************************\
+**
+**  tEdge::CalcDz
+**
+**  computes & sets Dz dest-orignal 
+**
+**  For orographic precipitation J Han
+\**************************************************************************/
+
+inline double tEdge::CalcDz()
+{
+   assert( org!=0 );  // Failure = edge has no origin and/or destination node
+   assert( dest!=0 );
+   double dz = dest->getZ() - org->getZ();
+   return (dz);
+}
+
+/**************************************************************************\
+**
+**  tEdge::getdestX
+**
+**  get dest x value 
+**
+**  For orographic precipitation J Han
+\**************************************************************************/
+
+inline double tEdge::getdestX()
+{
+   assert( org!=0 );  // Failure = edge has no origin and/or destination node
+   assert( dest!=0 );
+   return (dest->getX());
+}
+
+/**************************************************************************\
+**
+**  tEdge::getdestY
+**
+**  get dest y value 
+**
+**  For orographic precipitation J Han
+\**************************************************************************/
+
+inline double tEdge::getdestY()
+{
+   assert( org!=0 );  // Failure = edge has no origin and/or destination node
+   assert( dest!=0 );
+   return (dest->getY());
+}
+
+/**************************************************************************\
+**
+**  tEdge::getdestZ
+**
+**  get dest z value 
+**
+**  For orographic precipitation J Han
+\**************************************************************************/
+
+inline double tEdge::getdestZ()
+{
+   assert( org!=0 );  // Failure = edge has no origin and/or destination node
+   assert( dest!=0 );
+   return (dest->getZ());
+}
+
+/**************************************************************************\
+**
+**  tEdge::getdest
+**
+**  get pointer of dest node 
+**
+**  For orographic precipitation J Han
+\**************************************************************************/
+
+inline tNode * tEdge::getdest()
+{
+   assert( org!=0 );  // Failure = edge has no origin and/or destination node
+   assert( dest!=0 );
+   return (dest);
+}
+
+/**************************************************************************\
+**
+**  tEdge::CalAngle
+**
+**  computes & sets angle between edge and x direction 
+**
+**  For orographic precipitation J Han
+\**************************************************************************/
+
+inline double tEdge::CalAngle()
+{
+   assert( org!=0 );  // Failure = edge has no origin and/or destination node
+   assert( dest!=0 );
+   double angleVal;
+   double dx = dest->getX() - org->getX();
+   double dy = dest->getY() - org->getY();
+   double conval=(dx/sqrt( dx*dx + dy*dy ));
+   
+   if (dy<0 && conval >= 0)
+   {
+	   angleVal=2*3.1416-acos(conval);
+   }
+   if (dy>=0 && conval >= 0)
+   {
+	   angleVal=acos(conval);
+   }
+   
+   
+   
+   
+      if (dy<0 && conval < 0)
+   {
+	   angleVal=2*3.1416-(3.1416-acos(fabs(conval)));
+   }
+   if (dy>=0 && conval < 0)
+   {
+	   angleVal=3.1416-acos(fabs(conval));
+   }
+   
+   
+   return (angleVal);
+	
+}
 
 /**************************************************************************\
 **

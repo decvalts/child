@@ -71,6 +71,8 @@ tStorm::tStorm( const tInputFile &infile, tRand *rand_,
 {
    // Read + set parameters for storm intensity, duration, and spacing
    optVariable = infile.ReadBool( "OPTVAR" );
+   optOroPrecip = infile.ReadBool( "OPTOROGRAPHICPRECIP", false ); // flag of orographic precipitation,if false run as normal without oro-rain.
+   
    if( !no_write_mode )
      {
        infile.WarnObsoleteKeyword("PMEAN", "ST_PMEAN");
@@ -92,6 +94,23 @@ tStorm::tStorm( const tInputFile &infile, tRand *rand_,
    istdur = istdur_ts.calc(0.);
 
    endtm = infile.ReadItem( endtm, "RUNTIME" );
+   
+   if (optOroPrecip)
+   {
+	      SpeedX = infile.ReadItem( SpeedX, "WINDSPEED_X" );    
+          SpeedY = infile.ReadItem( SpeedY, "WINDSPEED_Y" );    
+	      source0 = infile.ReadItem( source0, "WATERBACKGROUND"); 
+		  tauc = infile.ReadItem( tauc, "TAU_C"); 
+		  tauf = infile.ReadItem( tauf, "TAU_F"); 
+		  avrge = infile.ReadItem( avrge, "SUBEDGE_ON"); 
+		  BasicP = infile.ReadItem( BasicP, "BASIC_P"); 
+		  initialqc = infile.ReadItem( initialqc, "INITIAL_QC"); 
+		  initialqs = infile.ReadItem( initialqs, "INITIAL_QS"); 
+		  subEgeNum = infile.ReadItem( subEgeNum, "SUBEDGE_NUM"); 
+   }
+   
+   
+   
    double help;
 
    help = infile.ReadItem( help, "OPTREADINPUT" );
@@ -186,7 +205,7 @@ void tStorm::TurnOffOutput()
 **     GT 3/00
 **
 \**************************************************************************/
-void tStorm::GenerateStorm( double tm, double minp, double mind )
+void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, double mind )  //////add mesh, for taking mositure of each node for orographic rainfall if it's turned on
 {
 
    p = p_ts.calc(tm);
@@ -219,6 +238,617 @@ void tStorm::GenerateStorm( double tm, double minp, double mind )
       if( stormfile.good() )
 	stormfile << istdur << " " << p << " " << stdur << std::endl;
    }
+   
+   
+   
+    if( optOroPrecip )
+   {
+/**************************************************************************\
+**
+**  linear orographic precipitation model (Smith&Barstad, 2004)
+**  modified by J Han
+\**************************************************************************/
+     #define kMaxSpokes 100
+	 tMesh< tLNode > *meshPtr; 
+       meshPtr = meshRef;
+	   tLNode *cn;
+	   tEdge *flowedg, *flowdgeOrg, *flowedg1min, *flowedg1max, *flowedg2min, *flowedg2max;
+	   tMesh< tLNode >::nodeListIter_t nodIter( meshPtr->getNodeList() );
+	   double dhdx, dhdy, slopeOrg, angleV, angleV1max, angleV2max, angleV1min, angleV2min;
+	   double dx1min, dy1min, dz1min, dx1max, dy1max, dz1max, dx2min, dy2min, dz2min, dx2max, dy2max, dz2max;
+	   double ETS;
+	   double e=2.718281828;
+	   double molecularRation=0.622;
+	   double mixRation, specHum;
+	   double press;
+	   double density;
+	   double precipWeight;
+	   int ctr;
+	   double AngleWind, AngleWindOpp;
+	   double dest1qc, dest2qc, dest1qs, dest2qs, dest1L, dest2L;
+	   double dest1qcex, dest2qcex, dest1qsex, dest2qsex;
+	   const int nActiveNodes = meshPtr->getNodeList()->getActiveSize(); // # active nodes
+       const int nnodes = meshPtr->getNodeList()->getSize(); // total # nodes
+	   tLNode **cnWind = new tLNode *[nActiveNodes];  // prt to node list ordered in wind direction
+	   double *plengthWind = new double [nActiveNodes]; // prt to the list of length of each point in wind direction
+	   
+
+	   int numNode;
+	   double minX, maxX, minY, maxY;
+	   double orignX, orignY;
+	   double k, a, b, c;  // line ax+by+c=0 which go through each point in the mesh
+	   
+	   /////////////////////////////////find the min, max coordinary of X and Y/////////////
+	   numNode=0;
+		for( cn = nodIter.FirstP(); nodIter.IsActive();
+        cn = nodIter.NextP() )
+	   {
+			if (numNode == 0)
+			{
+				minX=cn->getX();
+				maxX=cn->getX();
+				minY=cn->getY();
+				maxY=cn->getY();
+			}
+		   if (numNode != 0 )
+		   {
+			   if (cn->getX()<minX)
+			   {
+				   minX=cn->getX();
+			   }
+			   
+			   if (cn->getX()>maxX)
+			   {
+				   maxX=cn->getX();
+			   }
+			   
+				if (cn->getY()<minY)
+			   {
+				   minY=cn->getY();
+			   }
+			   
+			   if (cn->getY()>maxY)
+			   {
+				   maxY=cn->getY();
+			   }
+		   }
+		   
+		   numNode++;
+	   }
+	   
+	   /////////////////////////////node ordered in wind direction////////////////////////////
+	   
+	   if (SpeedX>=0 && SpeedY>=0)  ////////set origin point depend on wind direction
+	   {
+		   orignX=minX;
+		   orignY=minY;
+	   }
+	   
+	   if (SpeedX>=0 && SpeedY<0)
+	   {
+		   orignX=minX;
+		   orignY=maxY;
+	   }
+	   
+	   if (SpeedX<0 && SpeedY>=0)
+	   {
+		   orignX=maxX;
+		   orignY=minY;
+	   }
+	   
+	   if (SpeedX<0 && SpeedY<0)
+	   {
+		   orignX=maxX;
+		   orignY=maxY;
+	   }                                   /////////////////////////////////////////////////////////////
+	   
+	   
+	   
+	   	    numNode=0;
+	   	for( cn = nodIter.FirstP(); nodIter.IsActive();  /////////////////////node order in wind direction
+        cn = nodIter.NextP() )
+		{
+			if (SpeedX==0)
+			{
+				a=0;
+				b=-1;
+			}
+			else if (SpeedY==0)
+			{
+				a=1;
+				b=0;
+			}
+			else
+			{
+				a=-SpeedX/SpeedY;
+				b=-1;
+			}
+			
+			
+			c=-a*cn->getX()-b*cn->getY();
+			
+			
+			if (numNode == 0)
+			{
+				cnWind[numNode]=cn;
+			}
+			
+			if (numNode != 0 )
+			{
+				for (int numNode2=numNode; numNode2 >= 0; numNode2--)
+				{
+					if ((numNode2-1) < 0)
+					{
+											
+						if (numNode2 < numNode)
+						{
+							for (int numNode3=numNode; numNode3 > numNode2; numNode3--)
+							{
+								cnWind[numNode3]=cnWind[numNode3-1];
+							}
+						}
+						cnWind[numNode2] = cn;
+						break;
+						
+					}
+					
+					else if (PTLlength(orignX, orignY, a, b, c) >= PTLlength(orignX, orignY, a, b, -a*cnWind[numNode2-1]->getX()-b*cnWind[numNode2-1]->getY()))
+					{
+						
+						if (numNode2 < numNode)
+						{
+							for (int numNode3=numNode; numNode3 > numNode2; numNode3--)
+							{
+								cnWind[numNode3]=cnWind[numNode3-1];
+							}
+						}
+						cnWind[numNode2] = cn;
+						break;
+					}
+				}
+			}
+			
+			
+			numNode++;
+	   
+	   }
+	   
+
+	   //////////////////////////////wind direction/////////////////////////////////////////
+	   
+	   if (SpeedY<0 && SpeedX/sqrt( SpeedX*SpeedX + SpeedY*SpeedY )>=0)
+	   {
+		   AngleWind=2*3.1416-acos(SpeedX/sqrt( SpeedX*SpeedX + SpeedY*SpeedY ));
+	   }
+	   	   if (SpeedY>=0 && SpeedX/sqrt( SpeedX*SpeedX + SpeedY*SpeedY ) >= 0)
+	   {
+		   AngleWind=acos(SpeedX/sqrt( SpeedX*SpeedX + SpeedY*SpeedY ));
+	   }
+	   
+	   
+	   
+	   	   if (SpeedY<0 && SpeedX/sqrt( SpeedX*SpeedX + SpeedY*SpeedY )< 0)
+	   {
+		   AngleWind=2*3.1416-(3.1416-acos(fabs(SpeedX/sqrt( SpeedX*SpeedX + SpeedY*SpeedY ))));
+	   }
+	   	   if (SpeedY>=0 && SpeedX/sqrt( SpeedX*SpeedX + SpeedY*SpeedY ) < 0)
+	   {
+		   AngleWind=3.1416-acos(fabs(SpeedX/sqrt( SpeedX*SpeedX + SpeedY*SpeedY )));
+	   }
+	   
+
+	for( cn = nodIter.FirstP(); nodIter.IsActive();
+        cn = nodIter.NextP() )
+   {
+	   ctr=0;
+	   angleV1max=NULL; 
+	   angleV2max=NULL; 
+	   angleV1min=-3.1416*2;
+	   angleV2min=3.1416*2;
+	  flowedg = cn->getEdg();
+	  flowdgeOrg = cn->getEdg();
+
+	  angleV=flowedg->CalAngle();
+	  angleV=angleV-AngleWind;
+	  if (angleV<0 )
+	  {
+		  angleV1min=angleV;
+		  
+		  flowedg1min=flowedg;
+		  
+		  angleV1max=angleV;
+		  flowedg1max=flowedg;
+	  }
+	  if (angleV>=0)
+	  {
+		  angleV2min=angleV;
+		  flowedg2min=flowedg;
+		  angleV2max=angleV;
+		  flowedg2max=flowedg;
+	  }
+ 
+	  slopeOrg=flowedg->CalcSlope();
+	  flowedg = flowedg->getCCWEdg();
+	 
+	  while (flowedg!=flowdgeOrg)
+	  {
+
+          angleV=flowedg->CalAngle();
+  	      angleV=angleV-AngleWind;
+	      if (angleV<0 && angleV>angleV1min)  ////////////////////////calculate min angle for direction1
+	     {
+	   	      angleV1min=angleV;
+			  flowedg1min=flowedg;
+			  if (angleV1max==NULL)
+			  {
+				  angleV1max=angleV1min;
+				  flowedg1max=flowedg;
+			  }
+	     }
+		 
+		   if (angleV<0 && angleV<angleV1max) /////////////////////////// calculate max angle for direction1
+	     {
+	   	      angleV1max=angleV;
+
+			  flowedg1max=flowedg;
+	     }
+		 
+		  if (angleV>=0 && angleV<angleV2min) ///////////////////////// calculate min angle for direction2
+		  {
+			  angleV2min=angleV;
+			  flowedg2min=flowedg;
+				if (angleV2max==NULL)
+			  {
+				  angleV2max=angleV2min;
+				  flowedg2max=flowedg;
+			  }
+		  }
+	
+		  if (angleV>=0 && angleV>angleV2max) /////////////////////////// calculate max angle for direction2
+		  {
+			  angleV2max=angleV;
+			  flowedg2max=flowedg;
+		  }
+
+		
+		
+
+		  if( ctr>kMaxSpokes ) // Make sure to prevent std::endless loops
+            {
+               std::cerr << "Mesh error: node " << cn->getID()
+                    << " appears to be surrounded by closed boundary nodes"
+                    << std::endl;
+               ReportFatalError( "Bailing out of InitFlowDirs()" );
+            }
+			
+			ctr++;
+			flowedg = flowedg->getCCWEdg();
+		   	 
+	
+	  }
+	  
+		if (angleV1min==-3.1416*2)
+		{
+			flowedg1min=flowedg2max;
+			angleV1min=angleV2max;
+		}
+		if (angleV2min==3.1416*2)
+		
+		{
+			flowedg2min=flowedg1max;
+			angleV2min=angleV1max;
+		}
+		
+		
+		
+		dhdx=(flowedg1min->CalcDz()*flowedg2min->CalcDy()-flowedg2min->CalcDz()*flowedg1min->CalcDy())/(flowedg1min->CalcDx()*flowedg2min->CalcDy()-flowedg2min->CalcDx()*flowedg1min->CalcDy());
+	    dhdy=(flowedg1min->CalcDz()*flowedg2min->CalcDx()-flowedg2min->CalcDz()*flowedg1min->CalcDx())/(flowedg1min->CalcDy()*flowedg2min->CalcDx()-flowedg2min->CalcDy()*flowedg1min->CalcDx());
+	  ETS=6.112*pow(e,17.67*(25-0.0065*cn->getZ())/(243.5+25-0.0065*cn->getZ()));
+	  press=101325*pow((1-0.0000225577*cn->getZ()),5.25588);
+	  mixRation=molecularRation*ETS/(press-ETS);
+	  specHum=mixRation/(1+mixRation);
+	  density=101325/(287.05*(25+273.15-0.0065*cn->getZ()));
+	  precipWeight=density*specHum*(SpeedX*dhdx+SpeedY*dhdy);  /////// unit: kg/m3
+	  cn->setSource(source0+precipWeight*10000/1); /// precipitation unit change (column density/time-> depth/time): kg/(m3*s) to m/(yr) need more editing
+	 
+      cn->setOroqc(0);
+	  cn->setOroqs(0);
+	   
+    
+
+   }
+      
+	  
+/////////////////////////////////////////////calculate qc , qs, and precipitation //////////////////////////
+	  
+	    AngleWindOpp=AngleWind+3.1416; /////////get the opposite direction of wind
+		if (AngleWindOpp>=3.1416*2)
+		{
+			AngleWindOpp=AngleWindOpp-3.1416*2;
+		}
+       for (int numNode=0; numNode <= nActiveNodes-1; numNode++)
+		{
+				   ctr=0;
+	   angleV1max=NULL; 
+	   angleV2max=NULL; 
+	   angleV1min=-3.1416*2;
+	   angleV2min=3.1416*2;
+	  flowedg = cnWind[numNode]->getEdg();
+	  flowdgeOrg = cnWind[numNode]->getEdg();
+
+	  angleV=flowedg->CalAngle();
+	  angleV=angleV-AngleWindOpp;
+	  if (angleV<0 )
+	  {
+		  angleV1min=angleV;
+		  
+		  flowedg1min=flowedg;
+		  
+		  angleV1max=angleV;
+		  flowedg1max=flowedg;
+	  }
+	  if (angleV>=0)
+	  {
+		  angleV2min=angleV;
+		  flowedg2min=flowedg;
+		  angleV2max=angleV;
+		  flowedg2max=flowedg;
+	  }
+  
+	  slopeOrg=flowedg->CalcSlope();
+	  flowedg = flowedg->getCCWEdg();
+	 
+	  while (flowedg!=flowdgeOrg)
+	  {
+
+          angleV=flowedg->CalAngle();
+  	      angleV=angleV-AngleWindOpp;
+	      if (angleV<0 && angleV>angleV1min)  ////////////////////////calculate min angle for direction1
+	     {
+	   	      angleV1min=angleV;
+			  flowedg1min=flowedg;
+			  if (angleV1max==NULL)
+			  {
+				  angleV1max=angleV1min;
+				  flowedg1max=flowedg;
+			  }
+	     }
+		 
+		   if (angleV<0 && angleV<angleV1max) /////////////////////////// calculate max angle for direction1
+	     {
+	   	      angleV1max=angleV;
+
+			  flowedg1max=flowedg;
+	     }
+		 
+		  if (angleV>=0 && angleV<angleV2min) ///////////////////////// calculate min angle for direction2
+		  {
+			  angleV2min=angleV;
+			  flowedg2min=flowedg;
+				if (angleV2max==NULL)
+			  {
+				  angleV2max=angleV2min;
+				  flowedg2max=flowedg;
+			  }
+		  }
+	
+		  if (angleV>=0 && angleV>angleV2max) /////////////////////////// calculate max angle for direction2
+		  {
+			  angleV2max=angleV;
+			  flowedg2max=flowedg;
+		  }
+
+		
+		
+
+		  if( ctr>kMaxSpokes ) // Make sure to prevent std::endless loops
+            {
+               std::cerr << "Mesh error: node " << cnWind[numNode]->getID()
+                    << " appears to be surrounded by closed boundary nodes"
+                    << std::endl;
+               ReportFatalError( "Bailing out of InitFlowDirs()" );
+            }
+			
+			ctr++;
+			
+		
+            flowedg = flowedg->getCCWEdg();
+	  }
+	  
+		if (angleV1min==-3.1416*2)
+		{
+			flowedg1min=flowedg2max;
+			angleV1min=angleV2max;
+		}
+		if (angleV2min==3.1416*2)
+		
+		{
+			flowedg2min=flowedg1max;
+			angleV2min=angleV1max;
+		}
+		
+		if ( !(flowedg1min->getdest()->isNonBoundary()) && !(flowedg2min->getdest()->isNonBoundary()))
+		 {
+			  cnWind[numNode]->setOroqc(initialqc);
+		      cnWind[numNode]->setOroqs(initialqs);
+		 }
+		 
+
+        else
+		{
+			
+			if (SpeedX==0)
+			{
+				a=0;
+				b=-1;
+			}
+			else if (SpeedY==0)
+			{
+				a=1;
+				b=0;
+			}
+			else
+			{
+				a=-SpeedX/SpeedY;
+				b=-1;
+			}
+			
+			
+			
+			if (avrge==0)         //overlook the sub edge calculation of qs and qc
+		{
+			
+				dest1qc=((tLNode *)flowedg1min->getdest())->getOroqc()+(((tLNode *)flowedg1min->getdest())->getSource()-((tLNode *)flowedg1min->getdest())->getOroqc()/tauc)*(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg1min->getdest()->getX()-b*flowedg1min->getdest()->getY()))/sqrt(SpeedX*SpeedX+SpeedY*SpeedY);
+		        
+			if (dest1qc<0)
+		    {
+			      dest1qc=0;
+				  dest1qs=((tLNode *)flowedg1min->getdest())->getOroqs()+((tLNode *)flowedg1min->getdest())->getOroqc()+(((tLNode *)flowedg1min->getdest())->getSource()-((tLNode *)flowedg1min->getdest())->getOroqs()/tauf)*(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg1min->getdest()->getX()-b*flowedg1min->getdest()->getY()))/sqrt(SpeedX*SpeedX+SpeedY*SpeedY);
+		    }
+			else
+			{
+				dest1qs=((tLNode *)flowedg1min->getdest())->getOroqs()+(((tLNode *)flowedg1min->getdest())->getOroqc()/tauc-((tLNode *)flowedg1min->getdest())->getOroqs()/tauf)*(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg1min->getdest()->getX()-b*flowedg1min->getdest()->getY()))/sqrt(SpeedX*SpeedX+SpeedY*SpeedY);
+			}
+			if (dest1qs<0)
+		    {
+			      dest1qs=0;
+		    }
+			
+				
+				dest2qc=((tLNode *)flowedg2min->getdest())->getOroqc()+(((tLNode *)flowedg2min->getdest())->getSource()-((tLNode *)flowedg2min->getdest())->getOroqc()/tauc)*(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg2min->getdest()->getX()-b*flowedg2min->getdest()->getY()))/sqrt(SpeedX*SpeedX+SpeedY*SpeedY);
+		        
+		     if (dest2qc<0)
+		    { 
+			      dest2qc=0;
+				  dest2qs=((tLNode *)flowedg2min->getdest())->getOroqs()+((tLNode *)flowedg2min->getdest())->getOroqc()+(((tLNode *)flowedg2min->getdest())->getSource()-((tLNode *)flowedg2min->getdest())->getOroqs()/tauf)*(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg2min->getdest()->getX()-b*flowedg2min->getdest()->getY()))/sqrt(SpeedX*SpeedX+SpeedY*SpeedY);
+		    }
+			else
+			{
+				
+				dest2qs=((tLNode *)flowedg2min->getdest())->getOroqs()+(((tLNode *)flowedg2min->getdest())->getOroqc()/tauc-((tLNode *)flowedg2min->getdest())->getOroqs()/tauf)*(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg2min->getdest()->getX()-b*flowedg2min->getdest()->getY()))/sqrt(SpeedX*SpeedX+SpeedY*SpeedY);
+			}
+		     if (dest2qs<0)
+		   {
+			      dest2qs=0;
+		    }
+			
+		}
+			if (avrge==1)                       // sub edge node calculation for qs and qc, and it might make  qs and qc more smooth
+			{
+				dest1qcex=((tLNode *)flowedg1min->getdest())->getOroqc();
+				dest1qsex=((tLNode *)flowedg1min->getdest())->getOroqs();
+				dest2qcex=((tLNode *)flowedg2min->getdest())->getOroqc();
+				dest2qsex=((tLNode *)flowedg2min->getdest())->getOroqs();
+				for (int loopn=0; loopn < subEgeNum; loopn++ )
+				{
+					dest1qc=dest1qcex+(((tLNode *)flowedg1min->getdest())->getSource()-dest1qcex/tauc)*(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg1min->getdest()->getX()-b*flowedg1min->getdest()->getY()))/sqrt(SpeedX*SpeedX+SpeedY*SpeedY)/subEgeNum;
+					
+			            if (dest1qc<0)
+		              {
+			             dest1qc=0;
+				          dest1qs=dest1qsex+dest1qcex+(((tLNode *)flowedg1min->getdest())->getSource()-dest1qsex/tauf)*(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg1min->getdest()->getX()-b*flowedg1min->getdest()->getY()))/sqrt(SpeedX*SpeedX+SpeedY*SpeedY)/subEgeNum;
+		              }
+			          else
+			         {
+				         dest1qs=dest1qsex+(dest1qcex/tauc-dest1qsex/tauf)*(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg1min->getdest()->getX()-b*flowedg1min->getdest()->getY()))/sqrt(SpeedX*SpeedX+SpeedY*SpeedY)/subEgeNum;
+			         }
+			         if (dest1qs<0)
+		    
+			         {
+						 dest1qs=0;
+					 }
+			
+				
+				        dest2qc=dest2qcex+(((tLNode *)flowedg2min->getdest())->getSource()-dest2qcex/tauc)*(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg2min->getdest()->getX()-b*flowedg2min->getdest()->getY()))/sqrt(SpeedX*SpeedX+SpeedY*SpeedY)/subEgeNum;
+		        
+		             if (dest2qc<0)
+					{ 
+			             dest2qc=0;
+				         dest2qs=dest2qsex+dest2qcex+(((tLNode *)flowedg2min->getdest())->getSource()-dest2qsex/tauf)*(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg2min->getdest()->getX()-b*flowedg2min->getdest()->getY()))/sqrt(SpeedX*SpeedX+SpeedY*SpeedY)/subEgeNum;
+		             }
+			          else
+					{
+			 	
+		         	   	dest2qs=dest2qsex+(dest2qcex/tauc-dest2qsex/tauf)*(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg2min->getdest()->getX()-b*flowedg2min->getdest()->getY()))/sqrt(SpeedX*SpeedX+SpeedY*SpeedY)/subEgeNum;
+			        }
+                      if (dest2qs<0)
+		            {
+			                dest2qs=0;
+		            }
+					
+					dest1qcex=dest1qc;
+				    dest1qsex=dest1qs;
+				    dest2qcex=dest2qc;
+				    dest2qsex=dest2qs;
+					
+				}
+			}
+			
+			
+			
+		
+		      dest1L=sqrt((cnWind[numNode]->getX()-flowedg1min->getdest()->getX())*(cnWind[numNode]->getX()-flowedg1min->getdest()->getX())+(cnWind[numNode]->getY()-flowedg1min->getdest()->getY())*(cnWind[numNode]->getY()-flowedg1min->getdest()->getY()));
+		      dest2L=sqrt((cnWind[numNode]->getX()-flowedg2min->getdest()->getX())*(cnWind[numNode]->getX()-flowedg2min->getdest()->getX())+(cnWind[numNode]->getY()-flowedg2min->getdest()->getY())*(cnWind[numNode]->getY()-flowedg2min->getdest()->getY()));
+		
+
+		
+			 if (dest1L < fabs(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg1min->getdest()->getX()-b*flowedg1min->getdest()->getY())))
+			  {
+				  dest1L=fabs(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg1min->getdest()->getX()-b*flowedg1min->getdest()->getY()));
+			  }
+			  if (dest2L < fabs(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg2min->getdest()->getX()-b*flowedg2min->getdest()->getY())))
+			  {
+				  dest2L=fabs(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg2min->getdest()->getX()-b*flowedg2min->getdest()->getY()));
+			  }
+	
+
+			  dest1L=sqrt(dest1L*dest1L-(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg1min->getdest()->getX()-b*flowedg1min->getdest()->getY()))*(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg1min->getdest()->getX()-b*flowedg1min->getdest()->getY())));
+			  dest2L=sqrt(dest2L*dest2L-(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg2min->getdest()->getX()-b*flowedg2min->getdest()->getY()))*(PTLlength(orignX, orignY, a, b, -a*cnWind[numNode]->getX()-b*cnWind[numNode]->getY())-PTLlength(orignX, orignY, a, b, -a*flowedg2min->getdest()->getX()-b*flowedg2min->getdest()->getY())));
+			
+			if ( !(flowedg1min->getdest()->isNonBoundary()) && flowedg2min->getdest()->isNonBoundary())
+			 {
+				  cnWind[numNode]->setOroqc(dest2qc);
+		          cnWind[numNode]->setOroqs(dest2qs);
+			 }
+             else if ( flowedg1min->getdest()->isNonBoundary() && !(flowedg2min->getdest()->isNonBoundary()))
+			 {
+				  cnWind[numNode]->setOroqc(dest1qc);
+		          cnWind[numNode]->setOroqs(dest1qs);
+			 }
+			 else
+			 {				 
+			  cnWind[numNode]->setOroqc(dest1L/(dest1L+dest2L)*(dest2qc-dest1qc)+dest1qc);
+		      cnWind[numNode]->setOroqs(dest1L/(dest1L+dest2L)*(dest2qs-dest1qs)+dest1qs);
+			 }
+
+	   } 
+
+
+			 cnWind[numNode]->setPreci(cnWind[numNode]->getOroqs()/tauf);
+	
+		
+		
+		if (cnWind[numNode]->getOroqs()/tauf <= BasicP)
+		{
+			cnWind[numNode]->setPreci (BasicP);
+		}
+		
+		
+		}
+
+
+	  
+	  
+	  
+	  
+	  delete[] cnWind;
+      delete[] plengthWind;
+	
+   }
+            
+	  
+
+
 }
 
 
@@ -320,3 +950,8 @@ double tStorm::GammaDev(double m) const
   return x;
 }
 
+// length of point (x,y) to line (ax+by+c=0) hanjianwei
+double tStorm::PTLlength(double x, double y, double a, double b, double c)
+{
+	return fabs(a*x+b*y+c)/sqrt(a*a+b*b);
+}
