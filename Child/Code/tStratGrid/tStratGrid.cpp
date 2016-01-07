@@ -343,19 +343,16 @@ void tStratGrid::updateConnect()
       const int bjmin = max(0,thisBox.jmin);
       const int bjmax = min(getJmax()-1,thisBox.jmax);
       // Find which StratNode is contained within the current triangle.
-      for(int i=bimin; i<=bimax; ++i)
-      {
-        for(int j=bjmin; j<=bjmax; ++j)
-        {
-          if ((*StratConnect)(i,j) != NULL)
-            continue;
-          if (ct->containsPoint( (*StratNodeMatrix)(i,j).getX(),
+      for(int i=bimin; i<=bimax; ++i) {
+	for(int j=bjmin; j<=bjmax; ++j) {
+	  if ((*StratConnect)(i,j) != NULL)
+	    continue;
+	  if (ct->containsPoint( (*StratNodeMatrix)(i,j).getX(),
 				 (*StratNodeMatrix)(i,j).getY() )
-          )
-          {
-             (*StratConnect)(i,j) = ct;
-          }
-        }
+	      ){
+	    (*StratConnect)(i,j) = ct;
+	  }
+	}
       }
     }
   }

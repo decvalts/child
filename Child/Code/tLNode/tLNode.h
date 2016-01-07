@@ -605,21 +605,7 @@ public:
   inline double getUplift() const;
   inline double getNetDownslopeForce() const;
   inline void setNetDownslopeForce( double );
-  
-  /////////////////////For orographic precipitation/////////////////////////////////////
-  inline double getPreci();                             // returns precipitation value 
-  inline double getSource();                           // returns source water value  
-  inline double getOroqc();                             // returns orographic qc value  
-  inline double getOroqs();                             // returns orographic qs value  
-  inline void setPreci (double);        // sets precipitation 
-  inline void setSource (double);        // sets source water 
-  inline void setOroqc(double);               // set qc for orographic precipitation  
-  inline void setOroqs(double);               // set qs for orographic precipitation  
-  inline void addOroqc(double);               // add qc for orographic precipitation  
-  inline void addOroqs(double);               // add qs for orographic precipitation  
-  //////////////////////////////////////////////////////////////////////////////////////
-  
-  
+
   inline size_t getNumg() const;
   inline void setNumg( size_t ) const;
   inline double getMaxregdep() const;
@@ -769,13 +755,6 @@ protected:
   //double safetyFactor; // Factor of safety for node (landsliding)
   bool is_masked_;    // Indicates a "masked out" node
   bool is_moving_;       // Flag indicating whether the node is moving
-  
-  ////////////////////for orographic precipitation///////////////////////
-  double preci;   // precipitation of node 
-  double source;   // source water 
-  double oroqc;   // orographic qc of node 
-  double oroqs;   // orographic qs of node  
-  //////////////////////////////////////////////////////////////////////
 public:
   int public1; // a "public" member that can be used for various purpose
 };
@@ -828,16 +807,6 @@ inline double tLNode::getQ() const
   return chan.q;
 }
 
-inline double tLNode::getPreci() {return preci;}    
-inline double tLNode::getSource() {return source;}    
-inline double tLNode::getOroqc() {return oroqc;}    
-inline double tLNode::getOroqs() {return oroqs;}    
-inline void tLNode::setPreci( double val ) {preci= val;}   
-inline void tLNode::setSource( double val ) {source= val;}   
-inline void tLNode::setOroqc( double val ) {oroqc= val;}   
-inline void tLNode::setOroqs( double val ) {oroqs= val;}   
-inline void tLNode::addOroqc( double val ) {oroqc= oroqc+val;}   
-inline void tLNode::addOroqs( double val ) {oroqs= oroqs+val;}   
 /************************************************************************\
  **  calcSlope: Computes and returns the slope of the node's flowedg, or
  **  zero if the slope is less than zero.

@@ -377,7 +377,6 @@ tLOutput<tSubNode>::tLOutput( tMesh<tSubNode> *meshPtr,
   this->CreateAndOpenFile( &netofs, ".net" );
   this->CreateAndOpenFile( &slpofs, ".slp" );
   this->CreateAndOpenFile( &qofs, ".q" );
-  this->CreateAndOpenFile( &pofs, ".p" );
   this->CreateAndOpenFile( &texofs, ".tx" );
   this->CreateAndOpenFile( &tauofs, ".tau" );
   this->CreateAndOpenFile( &permIDofs, ".id" );
@@ -529,7 +528,6 @@ void tLOutput<tSubNode>::WriteNodeData( double time )
   this->WriteTimeNumberElements( netofs, time, nActiveNodes);
   this->WriteTimeNumberElements( slpofs, time, nnodes);
   this->WriteTimeNumberElements( qofs, time, nnodes);
-  this->WriteTimeNumberElements( pofs, time, nActiveNodes);
   if(OptLayOutput)
     this->WriteTimeNumberElements( layofs, time, nActiveNodes);
   this->WriteTimeNumberElements( texofs, time, nnodes);
@@ -599,7 +597,6 @@ void tLOutput<tSubNode>::WriteNodeData( double time )
   netofs << std::flush;
   slpofs << std::flush;
   qofs << std::flush;
-  pofs << std::flush;
   texofs << std::flush;
   tauofs << std::flush;
   if( vegofs.good() ) vegofs << std::flush;

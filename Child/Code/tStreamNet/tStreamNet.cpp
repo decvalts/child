@@ -1658,40 +1658,13 @@ void tStreamNet::RouteFlowHydrographPeak()
   // Get iterator for list of nodes
   tMesh< tLNode >::nodeListIter_t nodeIter( meshPtr->getNodeList() );
   
-  
- for( curnode=nodeIter.FirstP(); nodeIter.IsActive(); curnode=nodeIter.NextP() )  
-     {
-       curnode->setDischarge( 0.0 );
-     }
-	 
-    SortNodesByNetOrder( true );   //Sort nodes uphill-to-downhill
-  
-  
   // Set peak discharge for each node
   for( curnode=nodeIter.FirstP(); nodeIter.IsActive(); curnode=nodeIter.NextP() )
   {
     travelTime = curnode->getFlowPathLength() / mdFlowVelocity;
-
-
-/////////////////////for orographic precipitation//////////////////////////////
-if (stormPtr->optOroPrecip)
-{
-	Qp = ( (curnode->getPreci() - infilt )* curnode->getVArea() * stormdur ) /
-	( mdHydrgrphShapeFac * ( stormdur + travelTime ) );
-	   curnode->AddDischarge(Qp);
-	   curnode->getDownstrmNbr()->AddDischarge( curnode->getQ() );
-}
-else
-{
-      Qp = ( runoff * curnode->getDrArea() * stormdur ) /
-	 ( mdHydrgrphShapeFac * ( stormdur + travelTime ) );
-      curnode->setDischarge( Qp );
-	
-}
-     
-
-//////////////////////////////////////////////////////////////////////////////////	 
-
+    Qp = ( runoff * curnode->getDrArea() * stormdur ) /
+    ( mdHydrgrphShapeFac * ( stormdur + travelTime ) );
+    curnode->setDischarge( Qp );
   }
   
 }
@@ -1954,42 +1927,17 @@ void tStreamNet::FlowUniform()
   double discharge;
   
   if( runoff<0 ) runoff = 0;  // Make sure runoff isn't negative
-  
-    for( curnode=nodIter.FirstP(); nodIter.IsActive(); curnode=nodIter.NextP() )  
-     {
-       curnode->setDischarge( 0.0 );
-     }
-	 
-    SortNodesByNetOrder( true );   //Sort nodes uphill-to-downhill
-	
   for( curnode = nodIter.FirstP(); nodIter.IsActive();
       curnode = nodIter.NextP() )
   {
-
- /////////////////////////////////////for orographic precipitation/////////////
-	if (stormPtr->optOroPrecip)
-	{
-	 // Add local runoff to total incoming discharge
-     //Local runoff is a function of local precipitation.
-     //Precip is calculated at every location - curnode->getVArea() * (curnode->getPreci()-infilt)
-     //Note that there is no infiltration here
-	   curnode->AddDischarge(curnode->getVArea() * (curnode->getPreci()-infilt));
-	   curnode->getDownstrmNbr()->AddDischarge( curnode->getQ() );
-	}
-	else
-	{
-		discharge = curnode->getDrArea() * runoff;
-	
-
- ///////////////////////////////////////////////////////////
-
+    discharge = curnode->getDrArea() * runoff;
     curnode->setDischarge( discharge );
   }
   if (0) //DEBUG
     std::cout << "FlowUniform finished" << std::endl;
 }
 
-}
+
 /*****************************************************************************\
  **
  **  tStreamNet::FlowSaturated1
@@ -2234,7 +2182,7 @@ void tStreamNet::FlowBucket()
  **     - updated: 12/19/97 SL
  **     - exploded and optimized: 08/2003 AD
  **
- *****************************************************************************/
+ \*****************************************************************************/
 void tStreamNet::FillLakes()
 {
   if (0) //DEBUG

@@ -38,23 +38,6 @@
 #include "../tInputFile/tInputFile.h"
 #include "../tTimeSeries/tTimeSeries.h"
 
-
-#include "../Classes.h"
-#include "../Definitions.h"
-#include "../Mathutil/mathutil.h"
-#include "../tArray/tArray.h"
-#include "../tPtrList/tPtrList.h"
-#include "../tList/tList.h"
-#include "../tStreamNet/tStreamNet.h"
-#include "../tLNode/tLNode.h"
-#include "../MeshElements/meshElements.h"
-#include "../tMesh/tMesh.h"
-#include "../tInputFile/tInputFile.h"
-#include "../globalFns.h"
-
-
-
-
 #include <iosfwd>
 #include <sstream>
 
@@ -62,19 +45,17 @@ class tStorm
 {
 public:
     tStorm( bool optVariable = true );
-    tStorm( const tInputFile &, tRand *, bool no_write_mode = false );
-    tStorm( const tStorm& );
-    void GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp=0.0, double mind=0.0 ); //add tMesh< tLNode > &meshRef
+  tStorm( const tInputFile &, tRand *, bool no_write_mode = false );
+  tStorm( const tStorm& );
+    void GenerateStorm( double tm, double minp=0.0, double mind=0.0);
     double getStormDuration() const;
     double interstormDur() const;
     double getRainrate() const;
     bool getOptVar() const;
-	double PTLlength(double x, double y, double a, double b, double c);     // length of point (x,y) to line (ax+by+c=0) 
-	bool optOroPrecip;  // Flag indicating whether orographic precipitation is used  
-    void TurnOnOutput( const tInputFile& );
-    void TurnOffOutput();
-    inline void setRand( tRand* ptr ) {rand = ptr;}
-    void setRainrate( double );
+  void TurnOnOutput( const tInputFile& );
+  void TurnOffOutput();
+  inline void setRand( tRand* ptr ) {rand = ptr;}
+  void setRainrate( double );
 
 private:
     double ExpDev() const;
@@ -90,16 +71,6 @@ private:
     double istdur;     // Actual time between storms
     double endtm;      // The end time of the run, just in case a big enough
                        // storm is never generated
-    double SpeedX;     // windspeed in x direction 
-	double SpeedY;     // windspeed in y direction 
-	double source0;    // source water of orographic precipitation 
-	double tauc;       // delay time of qc 
-	double tauf;      //delay time of qs    
-	double BasicP;    // the lowest value of precipitation 
-	double initialqc;  // the initial value of qc near the bondary 
-	double initialqs;  // the initial value of qs near the bondary 
-	int avrge;        //subEdge lenght average qs and qc 
-	int subEgeNum;    // sub Edge node number 
     bool optVariable;  // Flag indicating whether storms are random or not
 };
 

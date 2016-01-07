@@ -455,19 +455,16 @@ Initialize( int argc, char **argv )
  **  -SL, 10/2010
  */
 /**************************************************************************/
-
 vector<double> childInterface::
 VaryParameters( const tInputFile &optFile, const double &delta, 
                tRand &rand, bool yesVary /*=true*/ )
 {
   tList<double> paramL;
-
   // precipitation rate:
   double tmpVal = optFile.ReadDouble( "ST_PMEAN", false );
-  
   if( tmpVal > 0.0 )
   {
-    storm->GenerateStorm( 0.0 , mesh);     // add:mesh
+    storm->GenerateStorm( 0.0 );
     double newRainrate = storm->getRainrate();
     if(yesVary)
     {
@@ -478,7 +475,6 @@ VaryParameters( const tInputFile &optFile, const double &delta,
     }
     paramL.insertAtBack( newRainrate );
   }
-   
   // infiltration rate, also saturated hydraulic conductivity:
   tmpVal = optFile.ReadDouble( "INFILTRATION", false );
   if( tmpVal > 0.0 )
@@ -628,9 +624,7 @@ RunOneStorm()
 	
   // Do storm...
   storm->GenerateStorm( time->getCurrentTime(),
-                    mesh,strmNet->getInfilt(), strmNet->getSoilStore() ); // add: mesh
-
-						   
+                       strmNet->getInfilt(), strmNet->getSoilStore() );
   stormDuration = min( storm->getStormDuration(), time->RemainingTime() );
   stormPlusDryDuration = min( storm->getStormDuration() + storm->interstormDur(),
                              time->RemainingTime() );
