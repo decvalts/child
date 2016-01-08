@@ -76,6 +76,10 @@ public:
     inline void setRand( tRand* ptr ) {rand = ptr;}
     void setRainrate( double );
 
+    // Additions DV 2016 - spatially variable storms
+    bool optSpatialPrecip; // Flag to indicate whether spatially variable precip used.
+    void setStormLayer();  // Set a tLayer with certain Nodes with rainfall depending on the storm spatial variables
+
 private:
     double ExpDev() const;
     double GammaDev(double) const;
@@ -101,6 +105,11 @@ private:
 	int avrge;        //subEdge lenght average qs and qc 
 	int subEgeNum;    // sub Edge node number 
     bool optVariable;  // Flag indicating whether storms are random or not
+
+    // Additions DV 2016 - For storm cell/spatially distribued storms
+    double stormcenterpoint_a;   // the a co-ordinate of the eye of storm
+    double stormcenterpoint_b;   // the b co-ordinate of the eye of storm
+    double stormradius;          // the radius of the storm cell
 };
 
 

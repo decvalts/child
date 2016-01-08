@@ -238,8 +238,27 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
       if( stormfile.good() )
 	stormfile << istdur << " " << p << " " << stdur << std::endl;
    }
-   
-   
+
+   /**************************************************************************\
+   **
+   ** Spatial model of rainfall distribution
+   \**************************************************************************/
+   if ( optSpatialPrecip )
+   {
+       // Calculate which nodes should be wetted based on the spatial parameters
+       // for storm centre and radius.
+       tMesh< tLNode > *meshPtr;
+       meshPtr = meshRef;
+       tLNode *cn;
+       tMesh< tLNode >::nodeListIter_t nodIter( meshPtr->getNodeList() );
+
+       for ( cn = nodIter.FirstP(); nodIter.IsActive(); cn = nodIterNextP() )
+       {
+           // Iterate over the nodes to calculate which ones get rainfall
+           // and which ones don't.
+       }
+   }
+
    
     if( optOroPrecip )
    {
