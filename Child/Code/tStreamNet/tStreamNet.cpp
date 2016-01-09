@@ -1967,26 +1967,23 @@ void tStreamNet::FlowUniform()
   {
 
  /////////////////////////////////////for orographic precipitation/////////////
-	if (stormPtr->optOroPrecip)
-	{
-	 // Add local runoff to total incoming discharge
+    /// Also for spatial precip - DV 2016 - can use the same formulation here for local precip(?)
+    if (stormPtr->optOroPrecip || stormPtr->optSpatialPrecip)
+    {
+     // Add local runoff to total incoming discharge
      //Local runoff is a function of local precipitation.
      //Precip is calculated at every location - curnode->getVArea() * (curnode->getPreci()-infilt)
      //Note that there is no infiltration here
-	   curnode->AddDischarge(curnode->getVArea() * (curnode->getPreci()-infilt));
-	   curnode->getDownstrmNbr()->AddDischarge( curnode->getQ() );
-	}
-	else
-	{
-		discharge = curnode->getDrArea() * runoff;
-	
-
- ///////////////////////////////////////////////////////////
-
-    curnode->setDischarge( discharge );
-  }
-  if (0) //DEBUG
-    std::cout << "FlowUniform finished" << std::endl;
+       curnode->AddDischarge(curnode->getVArea() * (curnode->getPreci()-infilt));
+       curnode->getDownstrmNbr()->AddDischarge( curnode->getQ() );
+    }
+    else
+    {
+       discharge = curnode->getDrArea() * runoff;
+       curnode->setDischarge( discharge );
+    }
+    if (0) //DEBUG
+        std::cout << "FlowUniform finished" << std::endl;
 }
 
 }

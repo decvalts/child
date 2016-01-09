@@ -242,6 +242,11 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
    /**************************************************************************\
    **
    ** Spatial model of rainfall distribution
+   ** Based on a simple circular storm cell model
+   ** The user must specify the x,y (a,b) coordinates of the eye of the storm
+   ** Rainfall is currently set to be uniform throughought the cell area,
+   **  and zero outside the cell.
+   **
    \**************************************************************************/
    if ( optSpatialPrecip )
    {
@@ -256,6 +261,20 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
        {
            // Iterate over the nodes to calculate which ones get rainfall
            // and which ones don't.
+
+           // get the node coords
+           cnX = cn->getX();
+           cnY = cn->getY();
+
+           // Test if they are inside the radius of the storm
+           if ( ((cnX - stormcenterpoint_a) * (cnX - stormcenterpoint_a) + (cnY - stormcenterpoint_b) * (cnY - stormcenterpoint_b) <= stormradius*stormradius) )
+           {
+               cn->setPreci( preci );
+           }
+           else
+           {
+               cn->setPreci( 0.0 );
+           }
        }
    }
 
@@ -270,7 +289,7 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
      #define kMaxSpokes 100
 	 tMesh< tLNode > *meshPtr; 
        meshPtr = meshRef;
-	   tLNode *cn;
+       tLNode *cn;  // pointer to the current node
 	   tEdge *flowedg, *flowdgeOrg, *flowedg1min, *flowedg1max, *flowedg2min, *flowedg2max;
 	   tMesh< tLNode >::nodeListIter_t nodIter( meshPtr->getNodeList() );
 	   double dhdx, dhdy, slopeOrg, angleV, angleV1max, angleV2max, angleV1min, angleV2min;
