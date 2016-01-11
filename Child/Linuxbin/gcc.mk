@@ -13,7 +13,7 @@ WARNINGFLAGS += -Wold-style-cast
 
 # -march=i686: generates code for pentiumpro and later
 # -march=pentium3: generates code for pentium III and later
-ARCH := -march=pentium3
+ARCH :=# -march=pentium3
 # optimise
 #PROFILE = -pg
 CFLAGS = $(WARNINGFLAGS) -g $(PROFILE) -O2 $(ARCH) -c

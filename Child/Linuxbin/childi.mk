@@ -1,7 +1,7 @@
 PT = ../Code
 
-include gccmac.mk
-#include gcc.mk
+#include gccmac.mk
+include gcc.mk
 #include icc.mk
 #include bcc.mk
 #include PC-lint/pclint.mk

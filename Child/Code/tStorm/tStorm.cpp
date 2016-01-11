@@ -72,7 +72,8 @@ tStorm::tStorm( const tInputFile &infile, tRand *rand_,
    // Read + set parameters for storm intensity, duration, and spacing
    optVariable = infile.ReadBool( "OPTVAR" );
    optOroPrecip = infile.ReadBool( "OPTOROGRAPHICPRECIP", false ); // flag of orographic precipitation,if false run as normal without oro-rain.
-   
+   optSpatialPrecip = infile.ReadBool( "OPTSPATIALPRECIP", false ); // flag for spatial precip
+
    if( !no_write_mode )
      {
        infile.WarnObsoleteKeyword("PMEAN", "ST_PMEAN");
@@ -109,7 +110,13 @@ tStorm::tStorm( const tInputFile &infile, tRand *rand_,
 		  subEgeNum = infile.ReadItem( subEgeNum, "SUBEDGE_NUM"); 
    }
    
-   
+   /// Spatial Precip - DV ///
+   if (optSpatialPrecip)
+   {
+       stormcenterpoint_a = infile.ReadItem( stormcenterpoint_a, "STORMCENTER_X" );
+       stormcenterpoint_b = infile.ReadItem( stormcenterpoint_b, "STORMCENTER_Y" );
+       stormradius = infile.ReadItem( stormradius, "STORMRADIUS" );
+   }
    
    double help;
 
@@ -256,8 +263,10 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
        meshPtr = meshRef;
        tLNode *cn;
        tMesh< tLNode >::nodeListIter_t nodIter( meshPtr->getNodeList() );
+       double cnX;
+       double cnY;
 
-       for ( cn = nodIter.FirstP(); nodIter.IsActive(); cn = nodIterNextP() )
+       for ( cn = nodIter.FirstP(); nodIter.IsActive(); cn = nodIter.NextP() )
        {
            // Iterate over the nodes to calculate which ones get rainfall
            // and which ones don't.
@@ -269,7 +278,7 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
            // Test if they are inside the radius of the storm
            if ( ((cnX - stormcenterpoint_a) * (cnX - stormcenterpoint_a) + (cnY - stormcenterpoint_b) * (cnY - stormcenterpoint_b) <= stormradius*stormradius) )
            {
-               cn->setPreci( preci );
+               cn->setPreci( p );
            }
            else
            {
