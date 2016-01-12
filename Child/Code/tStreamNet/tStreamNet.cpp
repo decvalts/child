@@ -1966,7 +1966,7 @@ void tStreamNet::FlowUniform()
       curnode = nodIter.NextP() )
   {
 
- /////////////////////////////////////for orographic precipitation/////////////
+    /////////////////////////////////////for orographic precipitation/////////////
     /// Also for spatial precip - DV 2016 - can use the same formulation here for local precip(?)
     if (stormPtr->optOroPrecip || stormPtr->optSpatialPrecip)
     {
