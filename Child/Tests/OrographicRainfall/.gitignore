@@ -1,0 +1,5 @@
+# Ignore all files except input paramter files
+
+*
+!*.in
+!.gitignore
