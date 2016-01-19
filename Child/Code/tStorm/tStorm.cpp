@@ -263,8 +263,8 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
        meshPtr = meshRef;
        tLNode *cn;
        tMesh< tLNode >::nodeListIter_t nodIter( meshPtr->getNodeList() );
-       double cnX;
-       double cnY;
+       volatile double cnX;
+       volatile double cnY;
 
        for ( cn = nodIter.FirstP(); nodIter.IsActive(); cn = nodIter.NextP() )
        {
@@ -278,10 +278,12 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
            // Test if they are inside the radius of the storm
            if ( ((cnX - stormcenterpoint_a) * (cnX - stormcenterpoint_a) + (cnY - stormcenterpoint_b) * (cnY - stormcenterpoint_b) <= stormradius*stormradius) )
            {
+               // We are in the storm cell, set the precip of the current node
                cn->setPreci( p );
            }
            else
            {
+               // We are outside the storm cell, no rain here!
                cn->setPreci( 0.0 );
            }
        }

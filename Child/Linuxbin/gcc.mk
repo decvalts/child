@@ -15,12 +15,12 @@ WARNINGFLAGS += -Wold-style-cast
 # -march=pentium3: generates code for pentium III and later
 ARCH :=# -march=pentium3
 # optimise
-#PROFILE = -pg
-CFLAGS = $(WARNINGFLAGS) -g $(PROFILE) -O2 $(ARCH) -c
-LDFLAGS = $(WARNINGFLAGS) -g $(PROFILE) -O2 $(ARCH)
+# PROFILE = -pg
+#CFLAGS = $(WARNINGFLAGS) -g $(PROFILE) -O2 $(ARCH) -c
+#LDFLAGS = $(WARNINGFLAGS) -g $(PROFILE) -O2 $(ARCH)
 # no optimisation, build is faster
-#CFLAGS = $(WARNINGFLAGS) -g $(ARCH) -c
-#LDFLAGS = $(WARNINGFLAGS) -g $(ARCH)
+CFLAGS = $(WARNINGFLAGS) -g $(ARCH) -O0 -c
+LDFLAGS = $(WARNINGFLAGS) -g $(ARCH) -O0
 LIBS =
 
 LDFLAGS += -o $@

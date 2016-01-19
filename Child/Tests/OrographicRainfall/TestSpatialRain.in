@@ -127,14 +127,14 @@ BASIC_P: set the lowest value for precipitation (m/y)
 #
 #   Spatially variable storm options
 #
-OPTSPATIALPRECIP:
+OPTSPATIALPRECIP:  Option for spatially variable precip
 1
-STORMCENTER_X:
+STORMCENTER_X: The x coordinate of the centre of the storm cell
 32000
-STORMCENTER_Y:
+STORMCENTER_Y: The y coordinate of the centre of the storm cell
 32000
-STORMRADIUS:
-1600
+STORMRADIUS:  The radius (m) of the storm cell from its centre point
+16000
 #
 #   Various options
 #
@@ -259,7 +259,7 @@ UPTYPE: type of uplift (0=none, 1=uniform, 2=block, etc)
 UPDUR: duration of uplift (yrs)
 2e16
 UPRATE: uplift rate (m/yr)
-0.002
+0.0002
 BLFALL_UPPER (m/yr): rate of baselevel fall at upper boundary, if appl.
 n/a
 BLDIVIDINGLINE:

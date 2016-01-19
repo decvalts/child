@@ -23,7 +23,7 @@
 # with a couple of other general settings.
 # 
 OUTFILENAME:
-UniformTest001
+OroTest001
 RUNTIME: Duration of run (years)
 20000000
 OPINTRVL: Output interval (years)
@@ -103,7 +103,7 @@ OPTSINVARINFILT: option for sinusoidal variations in infiltration capacity
 #  Orographic precipitation
 #
 OPTOROGRAPHICPRECIP: Option for orographic precipitation (1=on; 0=off)
-0
+1
 WINDSPEED_X: wind speed in x direction (m/s)
 0
 WINDSPEED_Y: wind speed in y direction (m/s)
@@ -134,7 +134,7 @@ STORMCENTER_X:
 STORMCENTER_Y:
 32000
 STORMRADIUS:
-16000
+1600
 #
 #   Various options
 #

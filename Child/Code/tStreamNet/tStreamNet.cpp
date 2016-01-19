@@ -1974,7 +1974,9 @@ void tStreamNet::FlowUniform()
      //Local runoff is a function of local precipitation.
      //Precip is calculated at every location - curnode->getVArea() * (curnode->getPreci()-infilt)
      //Note that there is no infiltration here
-       curnode->AddDischarge(curnode->getVArea() * (curnode->getPreci()-infilt));
+       discharge =  curnode->getVArea() * (curnode->getPreci()-infilt);
+
+       curnode->AddDischarge( discharge );
        curnode->getDownstrmNbr()->AddDischarge( curnode->getQ() );
     }
     else
