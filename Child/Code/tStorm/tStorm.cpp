@@ -113,9 +113,24 @@ tStorm::tStorm( const tInputFile &infile, tRand *rand_,
    /// Spatial Precip - DV ///
    if (optSpatialPrecip)
    {
-       stormcenterpoint_a = infile.ReadItem( stormcenterpoint_a, "STORMCENTER_X" );
-       stormcenterpoint_b = infile.ReadItem( stormcenterpoint_b, "STORMCENTER_Y" );
-       stormradius = infile.ReadItem( stormradius, "STORMRADIUS" );
+       // Read in the storm model code from the input file
+       int cread = infile.ReadItem( cread , "SPATIAL_STORM_MODEL" );
+       miStormType = IntToStormType( cread );
+
+       switch (miStormType)
+       {
+           // Different cases for generating storm points
+           // Case 1: Fixed centre location
+           case kStaticStormCell:
+           {
+               stormcenterpoint_a = infile.ReadItem( stormcenterpoint_a, "STORMCENTER_X" );
+               stormcenterpoint_b = infile.ReadItem( stormcenterpoint_b, "STORMCENTER_Y" );
+               stormradius = infile.ReadItem( stormradius, "STORMRADIUS" );
+           }
+           break;
+
+           // Case 2: Chosen from a random distribution
+
    }
    
    double help;
@@ -1003,4 +1018,23 @@ double tStorm::GammaDev(double m) const
 double tStorm::PTLlength(double x, double y, double a, double b, double c)
 {
 	return fabs(a*x+b*y+c)/sqrt(a*a+b*b);
+}
+
+
+/// Implementation of the IntToStormType function
+tStorm::kStormType_t tStreamNet::IntToStormType( int c ){
+  switch(c){
+    case 1: return kStaticStormCell;
+    case 2: return kRandomStormCell;
+    case 3: return kWeightedRandomStormCell;   // Added DV
+
+    default:
+      std::cout << "You asked for spatial storm model number " << c
+      << " but there is no such thing.\n"
+      "Available models are:\n"
+      " 1. Static Storm Cell, with specified storm radius (specified x, y coordinates of storm centre)\n"
+      " 2. Randomly located storm cells, of given radius\n"
+      " 3. Randomly located storm cells but specified mean radius and mean location\n";
+      ReportFatalError( "Unrecognized storm model code.\n" );
+  }
 }

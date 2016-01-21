@@ -80,6 +80,22 @@ public:
     bool optSpatialPrecip; // Flag to indicate whether spatially variable precip used.
     void setStormLayer();  // Set a tLayer with certain Nodes with rainfall depending on the storm spatial variables
 
+protected:
+    /// @brief Enumerator for the different spatial storm options
+    /// @author DV
+    /// @date Jan 2016
+    enum kStormType_t {
+        kStaticStormCell = 1,
+        kRandomStormCell = 2,
+        kWeightedRandomStormCell = 3
+    };
+    /// @brief Variable for the static storm type production method - DV
+    /// @return A kStormType_t enumerator
+    static kStormType_t IntToStormType( int );
+
+    // The storm model enumerator (code for which spatial storm model you want)
+    kStormType_t miStormType;
+
 private:
     double ExpDev() const;
     double GammaDev(double) const;
