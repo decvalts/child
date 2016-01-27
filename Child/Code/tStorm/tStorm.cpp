@@ -117,6 +117,13 @@ tStorm::tStorm( const tInputFile &infile, tRand *rand_,
        int cread = infile.ReadItem( cread , "SPATIAL_STORM_MODEL" );
        miStormType = IntToStormType( cread );
 
+       // Read in the minimum and maximum storm sizes for random storm generation
+       if (miStormType == kRandomStormCell)
+       {
+         minRadius = infile.ReadItem( minRadius, "MIN_RADIUS");
+         maxRadius = infile.ReadItem( maxRadius, "MAX_RADIUS");
+       }
+
        // Read in the values of storm centre point, and radius. These will
        // be mean values if one of the random options is turned on
        stormcenterpoint_a = infile.ReadItem( stormcenterpoint_a, "STORMCENTER_X" );
@@ -295,12 +302,20 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
            // Case 2: Chosen from a random distribution
            case kRandomStormCell:
            {
+
                do
                {
-                    center_a = stormcenterpoint_a*ExpDev();
-                    center_b = stormcenterpoint_b*ExpDev();
-                    this_radius = stormradius*ExpDev();
-           } while ()
+                 center_a = stormcenterpoint_a * ExpDev();
+               } while ( center_a <= 0 || center_a >= );
+               do
+               {
+                 center_b = stormcenterpoint_b * ExpDev();
+               } while ( center_b <= 0 || center_b >= );
+               do
+               {
+                 this_radius = stormradius*ExpDev();
+               } while ( this_radius <= minRadius || this_radius >= maxRadius );
+           }
            break;
 
            // Case 3: Chosen from a random weighted distribution
