@@ -6731,16 +6731,19 @@ template<class tSubNode>
 double tMesh<tSubNode>::
 getMaxXDomain()
 {
+  tSubNode *cn;
+  nodeListIter_t nodIter( nodeList );
+  double maxXDomain = 0.0;
   // Should pass a pointer to a mesh?? DV
   for( cn = nodIter.FirstP(); !(nodIter.AtEnd()); cn = nodIter.NextP() )
     {
-      double maxXDomain = 0.0;
-      double tempX = cn
+      double tempX = cn->getX();
       if (tempX > maxXDomain)
       {
           maxXDomain = tempX;
       }
     }
+    return maxXDomain;
 }
 
 

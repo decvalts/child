@@ -124,9 +124,9 @@ class tMesh
    tMesh();
 
    void MakePointBoundary( const ParamMMFS_t &, const tInputFile &,
-			   tPtrList< tSubNode > &, tRand &);
+                           tPtrList< tSubNode > &, tRand &);
    void MakePointInterior( const ParamMMFS_t &, const tInputFile &,
-			   bool makeMesh, tRand &);
+                           bool makeMesh, tRand &);
    void BuildDelaunayMeshTipper( kUpdateMesh_t updateFlag = kUpdateMesh );
    void MeshDensification( const tInputFile & );
    void MakeDelaunay( tPtrList< tTriangle > &, double time );
@@ -157,8 +157,8 @@ public:
   tMesh( tArray<double> &, tArray<double> &, tArray<double> &  );
    ~tMesh();
    void BatchAddNodes(); // quickly adds many nodes when starting w/ dense mesh
-  void RemovePointDuplicates( tSubNode &, tList<double> &, tList<double> &, 
-			      tList<double> & );
+  void RemovePointDuplicates( tSubNode &, tList<double> &, tList<double> &,
+                              tList<double> & );
    void MakeMeshFromScratch( const tInputFile &, tRand & ); // creates a new mesh
    void MakeMeshFromScratchTipper( const tInputFile &, tRand & );   // creates a new mesh
    void MakeMeshFromInputData( const tInputFile & ); // reads in an existing mesh
@@ -181,11 +181,11 @@ public:
    tTriangle *TriWithEdgePtr( tEdge * ) const;
    /*only routine needed to delete node; calls ExNode, RepairMesh:*/
    int DeleteNode( nodeListNode_t *, kRepairMesh_t repairFlag=kRepairMesh,
-		   kUpdateMesh_t updateFlag=kUpdateMesh,
-		   bool allowMobileDeletion = false );
+                   kUpdateMesh_t updateFlag=kUpdateMesh,
+                   bool allowMobileDeletion = false );
    int DeleteNode( tSubNode const *, kRepairMesh_t repairFlag=kRepairMesh,
-		   kUpdateMesh_t updateFlag=kUpdateMesh,
-		   bool allowMobileDeletion = false );
+                   kUpdateMesh_t updateFlag=kUpdateMesh,
+                   bool allowMobileDeletion = false );
    /*deletes spokes, *calls ExEdge, makes nbr ptr list:*/
    int ExtricateNode( tSubNode *, tPtrList< tSubNode > & );
    int DeleteEdge( tEdge * );
@@ -213,7 +213,7 @@ public:
    void RemoveFromList( tSubNode * ); // removes the last node added
    //add a node with referenced value/properties, update mesh connectivity
    tSubNode *AddNode( tSubNode &, kUpdateMesh_t updatemesh = kNoUpdateMesh,
-		      double time = 0.0, kFlip_t flip = kFlip );
+                      double time = 0.0, kFlip_t flip = kFlip );
    tSubNode* InsertNode( tSubNode*, double );
    //add a generic node at the referenced coordinates
    tSubNode *AddNodeAt( tArray< double > &, double time = 0.0 );
@@ -259,7 +259,7 @@ public:
    // find triangles between one node and the next, not connected by an edge
    tPtrList< tTriangle > InterveningTriangles( tNode*, tNode* ) const;
    void ForceFlow( tSubNode*, tSubNode*, double );
-  
+
 #ifndef NDEBUG
    /*'dump' routines for debugging*/
    void DumpEdges();
@@ -270,6 +270,9 @@ public:
   // Offsets for UTM coords (big numbers -> round-off error)
   double xOffset;
   double yOffset;
+
+  // Additions DV 2016
+  double getMaxXDomain();
 
 
 private:

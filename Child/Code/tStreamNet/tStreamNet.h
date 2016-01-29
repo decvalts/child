@@ -88,13 +88,13 @@ private:
     double inSedLoad; // total sediment load
     tArray< double > inSedLoadm; // incoming sediment load if multi-sizes
     tMesh< tLNode > *meshPtr;  // ptr to mesh
-    
+
     // IN PROGRESS: ALTERNATIVE HANDLING OF SED FEED, MAY 06
     bool optCalcSedFeed;  // Option to calculate sediment influx based on prescribed gradient & bed grain sizes
     double inletSlope;    // Fixed slope for inlet, if used
-	tTimeSeries inletSlope_ts;	//AL: inletslope as time series object
+        tTimeSeries inletSlope_ts;	//AL: inletslope as time series object
     tArray<double> inletSedSizeFraction;  // Proportion of each sediment class on bed at inlet
-    
+
 };
 
 
@@ -164,10 +164,10 @@ private:
 };
 
 inline tParkerChannels::tParkerChannels( const tParkerChannels &orig )
-  : mdPPfac(orig.mdPPfac), mdPPexp1(orig.mdPPexp1), mdPPexp2(orig.mdPPexp2), 
-    mdRough(orig.mdRough), mdDepthexp(orig.mdDepthexp), 
-    miNumGrainSizeClasses(orig.miNumGrainSizeClasses), 
-    mD50BySizeClass(orig.mD50BySizeClass) 
+  : mdPPfac(orig.mdPPfac), mdPPexp1(orig.mdPPexp1), mdPPexp2(orig.mdPPexp2),
+    mdRough(orig.mdRough), mdDepthexp(orig.mdDepthexp),
+    miNumGrainSizeClasses(orig.miNumGrainSizeClasses),
+    mD50BySizeClass(orig.mD50BySizeClass)
 {}
 
 /**************************************************************************/
@@ -292,7 +292,7 @@ protected:
     inline static void RouteRunoff( tLNode *, double, double );
     static void RouteError( tLNode * ) ATTRIBUTE_NORETURN;
 //   void RouteFlowAreaMultipleDirections( tLNode*, double );
-	bool FlowDirBreaksMeanderChannel( tLNode *, tEdge * ) const;
+        bool FlowDirBreaksMeanderChannel( tLNode *, tEdge * ) const;
 
     typedef enum {
       kRegimeChannels = 1,

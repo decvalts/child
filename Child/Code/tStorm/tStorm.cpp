@@ -18,6 +18,7 @@
 #include <math.h>
 #include <string.h>
 #include "../Mathutil/mathutil.h"
+#include "../tMesh/tMesh.h"
 #include <iostream>
 #include <fstream>
 
@@ -152,8 +153,8 @@ tStorm::tStorm( const tInputFile &infile, tRand *rand_,
           std::cerr << "Warning: unable to create storm data file '"
             << fname << "'\n";
    }
- }
 }
+
 
 tStorm::tStorm( const tStorm& orig )
    :  stormfile(),
@@ -305,8 +306,9 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
 
                do
                {
+                 // Find a centre point that is within the boundaries of the domain
                  center_a = stormcenterpoint_a * ExpDev();
-               } while ( center_a <= 0 || center_a >= );
+               } while ( center_a <= 0 || center_a >= tMesh::getMaxXDomain() );
                do
                {
                  center_b = stormcenterpoint_b * ExpDev();
@@ -1066,9 +1068,9 @@ double tStorm::PTLlength(double x, double y, double a, double b, double c)
     return fabs(a*x+b*y+c)/sqrt(a*a+b*b);
 }
 
-
+// Addition DAV 2016
 /// Implementation of the IntToStormType function
-tStorm::kStormType_t tStreamNet::IntToStormType( int c ){
+tStorm::kStormType_t tStorm::IntToStormType( int c ){
   switch(c){
     case 1: return kStaticStormCell;
     case 2: return kRandomStormCell;
