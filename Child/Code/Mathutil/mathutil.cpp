@@ -125,3 +125,27 @@ double tRand::ExpDev()
   while( dum == 0.0 );
   return -log( dum );
 }
+
+// Addition DAV 2016
+// Random generator between interval, calls ran3()
+double tRand::RandCustomInterval(double floatmin, double floatmax)
+{
+  double f = (double)ran3() / RAND_MAX;
+  return floatmin + f * (floatmax - floatmin);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

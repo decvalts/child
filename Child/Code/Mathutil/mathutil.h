@@ -1,4 +1,4 @@
-//-*-c++-*- 
+//-*-c++-*-
 
 /*********************************************************************/
 /**
@@ -49,6 +49,7 @@ public:
   void init(long);
   double ran3();
   double ExpDev();
+  double RandCustomInterval(double floatmin, double floatmax);
   void dumpToFile( std::ofstream&  );
   void readFromFile( std::ifstream& );
   int numberRecords() const;

@@ -304,26 +304,30 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
            case kRandomStormCell:
            {
 
-               do
-               {
-                 // Find a centre point that is within the boundaries of the domain
-                 center_a = stormcenterpoint_a * ExpDev();
-               } while ( center_a <= 0 || center_a >= tMesh::getMaxXDomain() );
-               do
-               {
-                 center_b = stormcenterpoint_b * ExpDev();
-               } while ( center_b <= 0 || center_b >= );
-               do
-               {
-                 this_radius = stormradius*ExpDev();
-               } while ( this_radius <= minRadius || this_radius >= maxRadius );
            }
            break;
 
            // Case 3: Chosen from a random weighted distribution
            case kWeightedRandomStormCell:
            {
+             // Find a centre point that is within the boundaries of the domain
+             // I don't think it's a good idea to call this every iteration!
+             // ok now: we just call the getter function from the pointer meshRef
+             // to retrieve the maxY or maxX domain. - DV 02/16
+               do
+               {
+                 center_a = stormcenterpoint_a * ExpDev();
+               } while ( center_a <= 0 || center_a >= meshRef->getMaxXDomain() );
 
+               do
+               {
+                 center_b = stormcenterpoint_b * ExpDev();
+               } while ( center_b <= 0 || center_b >= meshRef->getMaxYDomain() );
+
+               do
+               {
+                 this_radius = stormradius*ExpDev();
+               } while ( this_radius <= minRadius || this_radius >= maxRadius );
            }
            break;
        }

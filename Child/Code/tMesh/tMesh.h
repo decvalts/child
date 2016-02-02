@@ -272,8 +272,11 @@ public:
   double yOffset;
 
   // Additions DV 2016
-  double getMaxXDomain();
+  void setMaxXDomain();
+  void setMaxYDomain();
 
+  double getMaxXDomain() { return maxXdomain; }
+  double getMaxYDomain() { return maxYdomain; }
 
 private:
    static int orderRNode(const void*, const void*);
@@ -294,6 +297,10 @@ protected:
    bool layerflag;                 // flag indicating whether nodes have layers
    bool runCheckMeshConsistency;    // shall we run the tests ?
    tIDGenerator node_ID_generator;  // generates permanent IDs for nodes
+
+   // Additions DAV 2016
+   double maxXdomain;  // Maximum coordinates - used in the storm generator.
+   double maxYdomain;
 
 };
 

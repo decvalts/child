@@ -1721,6 +1721,16 @@ MakeMeshFromScratch( const tInputFile &infile, tRand &rand )
   // Now finalize the initialization by updating mesh properties
   UpdateMesh(); //calls CheckMeshConsistency()  TODO: once bug-free,
   CheckMeshConsistency();                     //remove CMC call from UM
+
+  // Addition DAV 2016
+  // Now the mesh has been created, we should be able to loop through the nodes
+  // and find the maximum dimensions. This seems trivial for the case where
+  // a mesh is created from scratch, since we could just load the maxX and maxY
+  // from the inputfile, but this method is more robust and should work for any
+  // of the MakeMesh() routines (e.g. from Points, from Exsiting File etc etc)
+  setMaxXDomain();
+  setMaxYDomain();
+
 }
 
 /**************************************************************************\
@@ -6726,24 +6736,53 @@ ForceFlow( tSubNode* un, tSubNode* dn, double time )
   assert( mn->getDownstrmNbr() == dn );
 }
 
-// DV - need to check this correct..
+/******************************************************************************\
+ **
+ **  setMaxX/YDomain():
+ **
+ **		Called by: Should be called at some point during the create
+ **             mesh routines.
+ **		Created: 02/16 DV
+ **
+ \*****************************************************************************/
+// Find the max X domain from all the nodes
 template<class tSubNode>
-double tMesh<tSubNode>::
-getMaxXDomain()
+void tMesh<tSubNode>::setMaxXDomain()
 {
   tSubNode *cn;
   nodeListIter_t nodIter( nodeList );
-  double maxXDomain = 0.0;
+
+  // maxXdomain is tMesh class member variable
+  maxXdomain = 0.0;
   // Should pass a pointer to a mesh?? DV
   for( cn = nodIter.FirstP(); !(nodIter.AtEnd()); cn = nodIter.NextP() )
     {
       double tempX = cn->getX();
-      if (tempX > maxXDomain)
+      if (tempX > maxXdomain)
       {
-          maxXDomain = tempX;
+          maxXdomain = tempX;
       }
     }
-    return maxXDomain;
+    //return maxXdomain;
+}
+
+// Find the max Y domain from all the nodes
+template<class tSubNode>
+void tMesh<tSubNode>::setMaxYDomain()
+{
+  tSubNode *cn;
+  nodeListIter_t nodIter( nodeList );
+  maxYdomain = 0.0;
+  // Should pass a pointer to a mesh?? DV
+  for( cn = nodIter.FirstP(); !(nodIter.AtEnd()); cn = nodIter.NextP() )
+    {
+      double tempY = cn->getY();
+      if (tempY > maxYdomain)
+      {
+          maxYdomain = tempY;
+      }
+    }
+    //return maxYDomain; // Use the getter functions
 }
 
 
