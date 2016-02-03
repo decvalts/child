@@ -69,8 +69,8 @@ public:
     double interstormDur() const;
     double getRainrate() const;
     bool getOptVar() const;
-        double PTLlength(double x, double y, double a, double b, double c);     // length of point (x,y) to line (ax+by+c=0)
-        bool optOroPrecip;  // Flag indicating whether orographic precipitation is used
+    double PTLlength(double x, double y, double a, double b, double c);     // length of point (x,y) to line (ax+by+c=0)
+    bool optOroPrecip;  // Flag indicating whether orographic precipitation is used
     void TurnOnOutput( const tInputFile& );
     void TurnOffOutput();
     inline void setRand( tRand* ptr ) {rand = ptr;}
@@ -111,21 +111,21 @@ private:
     double endtm;      // The end time of the run, just in case a big enough
                        // storm is never generated
     double SpeedX;     // windspeed in x direction
-        double SpeedY;     // windspeed in y direction
-        double source0;    // source water of orographic precipitation
-        double tauc;       // delay time of qc
-        double tauf;      //delay time of qs
-        double BasicP;    // the lowest value of precipitation
-        double initialqc;  // the initial value of qc near the bondary
-        double initialqs;  // the initial value of qs near the bondary
-        int avrge;        //subEdge lenght average qs and qc
-        int subEgeNum;    // sub Edge node number
+    double SpeedY;     // windspeed in y direction
+    double source0;    // source water of orographic precipitation
+    double tauc;       // delay time of qc
+    double tauf;      //delay time of qs
+    double BasicP;    // the lowest value of precipitation
+    double initialqc;  // the initial value of qc near the bondary
+    double initialqs;  // the initial value of qs near the bondary
+    int avrge;        //subEdge lenght average qs and qc
+    int subEgeNum;    // sub Edge node number
     bool optVariable;  // Flag indicating whether storms are random or not
 
     // Additions DV 2016 - For storm cell/spatially distribued storms
     double stormcenterpoint_a;   // the a co-ordinate of the eye of storm
     double stormcenterpoint_b;   // the b co-ordinate of the eye of storm
-    double stormradius;          // the radius of the storm cell
+    double stormradius;          // the AVERAGE radius of the storm cell, it will be multiplied by ExpDev() function
 
     // For generating random variation in storm cell size, set a min and max value,
     // so as not to generate unrealistically small cells (or ones far bigger than the domain)

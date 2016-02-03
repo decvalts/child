@@ -49,7 +49,7 @@ public:
   void init(long);
   double ran3();
   double ExpDev();
-  double RandCustomInterval(double floatmin, double floatmax);
+  double RandCustomInterval(double floatmin, double floatmax); // Addition DAV 2016
   void dumpToFile( std::ofstream&  );
   void readFromFile( std::ifstream& );
   int numberRecords() const;

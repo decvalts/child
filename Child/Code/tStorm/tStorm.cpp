@@ -127,9 +127,12 @@ tStorm::tStorm( const tInputFile &infile, tRand *rand_,
 
        // Read in the values of storm centre point, and radius. These will
        // be mean values if one of the random options is turned on
-       stormcenterpoint_a = infile.ReadItem( stormcenterpoint_a, "STORMCENTER_X" );
-       stormcenterpoint_b = infile.ReadItem( stormcenterpoint_b, "STORMCENTER_Y" );
-       stormradius = infile.ReadItem( stormradius, "STORMRADIUS" );
+       if ( miStormType == kWeightedRandomStormCell || miStormType == kStaticStormCell )
+       {
+         stormcenterpoint_a = infile.ReadItem( stormcenterpoint_a, "STORMCENTER_X" );
+         stormcenterpoint_b = infile.ReadItem( stormcenterpoint_b, "STORMCENTER_Y" );
+         stormradius = infile.ReadItem( stormradius, "STORMRADIUS" );
+       }
    }
 
    double help;
@@ -303,7 +306,15 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
            // Case 2: Chosen from a random distribution
            case kRandomStormCell:
            {
+             center_a = rand->RandCustomInterval(0.0, meshRef->getMaxXDomain() );
+             center_b = rand->RandCustomInterval(0.0, meshRef->getMaxYDomain() );
 
+             // Note: This will pick a storm radius from a uniform distribution:
+             // It may be wise to consider if this is really appropriate,
+             // i.e. does the distribution of storm cell sizes follow a uniform dist?
+             // Or is a poisson distribution (or other) more appropriate.
+             // DV  - 2016
+             this_radius = rand->RandCustomInterval( minRadius, maxRadius );
            }
            break;
 
