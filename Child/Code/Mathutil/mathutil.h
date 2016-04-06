@@ -51,6 +51,7 @@ public:
   double ExpDev();
   double RandCustomInterval(double floatmin, double floatmax); // Addition DAV 2016
   double RandRange2(int min, int max);
+  double RandRange3(int min, int max);
   void dumpToFile( std::ofstream&  );
   void readFromFile( std::ifstream& );
   int numberRecords() const;

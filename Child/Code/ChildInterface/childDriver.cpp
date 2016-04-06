@@ -20,9 +20,11 @@
 
 int main( int argc, char **argv )
 {
+  std::srand(std::time(0));
 	childInterface myChildInterface;
 	
 	myChildInterface.Initialize( argc, argv );
+  
 
 	if(1) // make this zero to use "example 2" below
 	{

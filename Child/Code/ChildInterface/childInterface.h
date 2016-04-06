@@ -29,6 +29,11 @@
 #include <string>
 #include <sstream>
 #include <vector>
+
+// DV Additions
+#include <cstdlib>
+#include <ctime>
+
 #include "../trapfpe.h"
 #include "../Inclusions.h"
 #include "../tFloodplain/tFloodplain.h"

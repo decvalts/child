@@ -137,9 +137,10 @@ double tRand::RandCustomInterval(double floatmin, double floatmax)
 }
 
 // Different implementation of generator
+// Time is bad seed if in loop with fast iterations!
 double tRand::RandRange2(int min, int max)
 {
-  std::srand(std::time(0));
+  
   int randNum = std::rand() % (max - min + 1) + min;
   
   double ran_dbl = static_cast<double>(randNum);
@@ -148,8 +149,15 @@ double tRand::RandRange2(int min, int max)
 }
 
 
-
-
+// Bad!
+double tRand::RandRange3(int min, int max)
+{
+  int randNum = (int)ran3() % (max - min + 1) + min;
+  
+  double ran_dbl = static_cast<double>(randNum);
+  
+  return ran_dbl;
+}
 
 
 
