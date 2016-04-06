@@ -22,6 +22,7 @@
 #include <iostream>
 #include <fstream>
 
+
 #include "tStorm.h"
 
 /**************************************************************************\
@@ -119,7 +120,7 @@ tStorm::tStorm( const tInputFile &infile, tRand *rand_,
        miStormType = IntToStormType( cread );
 
        // Read in the minimum and maximum storm sizes for random storm generation
-       if (miStormType == kRandomStormCell)
+       if (miStormType == kRandomStormCell || miStormType == kWeightedRandomStormCell)
        {
          minRadius = infile.ReadItem( minRadius, "MIN_RADIUS");
          maxRadius = infile.ReadItem( maxRadius, "MAX_RADIUS");
@@ -296,7 +297,8 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
            // Case 1: Fixed centre location
            case kStaticStormCell:
            {
-                //i.e. they are all fixed
+               //i.e. they are all fixed
+               // Note: this will not produce realistic looking topography
                center_a = stormcenterpoint_a;
                center_b = stormcenterpoint_b;
                this_radius = stormradius;
@@ -306,15 +308,23 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
            // Case 2: Chosen from a random distribution
            case kRandomStormCell:
            {
-             center_a = rand->RandCustomInterval(0.0, meshRef->getMaxXDomain() );
-             center_b = rand->RandCustomInterval(0.0, meshRef->getMaxYDomain() );
+             center_a = rand->RandRange2(0, meshRef->getMaxXDomain() );
+             center_b = rand->RandRange2(0, meshRef->getMaxYDomain() );
 
              // Note: This will pick a storm radius from a uniform distribution:
              // It may be wise to consider if this is really appropriate,
              // i.e. does the distribution of storm cell sizes follow a uniform dist?
              // Or is a poisson distribution (or other) more appropriate.
              // DV  - 2016
-             this_radius = rand->RandCustomInterval( minRadius, maxRadius );
+             this_radius = rand->RandRange2( minRadius, maxRadius );
+             
+             // Debug
+             std::cout << "MaxXDomain: " << meshRef->getMaxXDomain();
+             std::cout << " MaxYDomain: " << meshRef->getMaxYDomain();
+             std::cout << "StormRadius: " << this_radius;
+             std::cout << ", Centre_X: " << center_a;
+             std::cout << ", Centre_Y: " << center_b << std::endl;
+             //
            }
            break;
 

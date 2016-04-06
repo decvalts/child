@@ -6749,6 +6749,8 @@ ForceFlow( tSubNode* un, tSubNode* dn, double time )
 template<class tSubNode>
 void tMesh<tSubNode>::setMaxXDomain()
 {
+  // DEBUG
+  std::cout << "SETTING MAX X DOMAIN." << std::endl;
   tSubNode *cn;
   nodeListIter_t nodIter( nodeList );
 
@@ -6770,6 +6772,7 @@ void tMesh<tSubNode>::setMaxXDomain()
 template<class tSubNode>
 void tMesh<tSubNode>::setMaxYDomain()
 {
+  std::cout << "SETTING MAX Y DOMAIN." << std::endl;
   tSubNode *cn;
   nodeListIter_t nodIter( nodeList );
   maxYdomain = 0.0;

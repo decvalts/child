@@ -129,8 +129,8 @@ private:
 
     // For generating random variation in storm cell size, set a min and max value,
     // so as not to generate unrealistically small cells (or ones far bigger than the domain)
-    double minRadius;  // minimum storm cell radius
-    double maxRadius;  // maximum storm cell radius
+    int minRadius;  // minimum storm cell radius
+    int maxRadius;  // maximum storm cell radius
 };
 
 

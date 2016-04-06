@@ -11,6 +11,8 @@
 #include "mathutil.h"
 
 #include <fstream>
+#include <cstdlib>
+#include <ctime>
 
 #include "mt19937ar-cok.cpp"
 
@@ -133,6 +135,19 @@ double tRand::RandCustomInterval(double floatmin, double floatmax)
   double f = (double)ran3() / RAND_MAX;
   return floatmin + f * (floatmax - floatmin);
 }
+
+// Different implementation of generator
+double tRand::RandRange2(int min, int max)
+{
+  std::srand(std::time(0));
+  int randNum = std::rand() % (max - min + 1) + min;
+  
+  double ran_dbl = static_cast<double>(randNum);
+  
+  return ran_dbl;
+}
+
+
 
 
 

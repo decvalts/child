@@ -78,7 +78,9 @@ MakeMeshFromScratchTipper( const tInputFile &infile, tRand &rand )
 
    // call triangulator based on Tipper's method
    BuildDelaunayMeshTipper();
-
+   
+   tMesh<tSubNode>::setMaxXDomain();
+   tMesh<tSubNode>::setMaxYDomain();
    std::cout<<"MakeMeshFromScratchTipper done.\n";
 }
 
