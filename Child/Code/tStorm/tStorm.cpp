@@ -134,6 +134,12 @@ tStorm::tStorm( const tInputFile &infile, tRand *rand_,
          stormcenterpoint_b = infile.ReadItem( stormcenterpoint_b, "STORMCENTER_Y" );
          stormradius = infile.ReadItem( stormradius, "STORMRADIUS" );
        }
+       if (miStormType == kDominantStormCellSize)
+       {
+         stormradius = infile.ReadItem( stormradius, "STORMRADIUS" );
+         minRadius = infile.ReadItem( minRadius, "MIN_RADIUS");
+         maxRadius = infile.ReadItem( maxRadius, "MAX_RADIUS");
+       }
    }
 
    double help;
@@ -308,6 +314,7 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
            // Case 2: Chosen from a random distribution
            case kRandomStormCell:
            {
+             // RandRange2(min, max) - gets a random number between a range of two numbers given
              center_a = rand->RandRange2(0, meshRef->getMaxXDomain() );
              center_b = rand->RandRange2(0, meshRef->getMaxYDomain() );
 
@@ -327,6 +334,7 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
              //
            }
            break;
+           
 
            // Case 3: Chosen from a random weighted distribution
            case kWeightedRandomStormCell:
@@ -349,6 +357,35 @@ void tStorm::GenerateStorm( double tm, tMesh< tLNode > *meshRef, double minp, do
                {
                  this_radius = stormradius*ExpDev();
                } while ( this_radius <= minRadius || this_radius >= maxRadius );
+             
+               // debug purposes
+               std::cout << "MaxXDomain: " << meshRef->getMaxXDomain();
+               std::cout << " MaxYDomain: " << meshRef->getMaxYDomain();
+               std::cout << "StormRadius: " << this_radius;
+               std::cout << ", Centre_X: " << center_a;
+               std::cout << ", Centre_Y: " << center_b << std::endl;
+           }
+           break;
+           
+           // Case 4: Chosen from a random distribution for location, size is weighted to dominant size
+           case kDominantStormCellSize:
+           {
+             // RandRange2(min, max) - gets a random number between a range of two numbers given
+             center_a = rand->RandRange2(0, meshRef->getMaxXDomain() );
+             center_b = rand->RandRange2(0, meshRef->getMaxYDomain() );
+             
+             do
+             {
+               this_radius = stormradius*ExpDev();
+             } while ( this_radius <= minRadius || this_radius >= maxRadius );
+             
+             // Debug
+             std::cout << "MaxXDomain: " << meshRef->getMaxXDomain();
+             std::cout << " MaxYDomain: " << meshRef->getMaxYDomain();
+             std::cout << "StormRadius: " << this_radius;
+             std::cout << ", Centre_X: " << center_a;
+             std::cout << ", Centre_Y: " << center_b << std::endl;
+             //
            }
            break;
        }
@@ -1100,14 +1137,16 @@ tStorm::kStormType_t tStorm::IntToStormType( int c ){
     case 1: return kStaticStormCell;
     case 2: return kRandomStormCell;
     case 3: return kWeightedRandomStormCell;   // Added DV
+    case 4: return kDominantStormCellSize;  
 
     default:
       std::cout << "You asked for spatial storm model number " << c
-      << " but there is no such thing.\n"
-      "Available models are:\n"
-      " 1. Static Storm Cell, with specified storm radius (specified x, y coordinates of storm centre)\n"
-      " 2. Randomly located storm cells, of given radius\n"
-      " 3. Randomly located storm cells but specified mean radius and mean location\n";
+      << " but there is no such thing.\n" \
+      "Available models are:\n" \
+      " 1. Static Storm Cell, with specified storm radius (specified x, y coordinates of storm centre)\n" \
+      " 2. Randomly located storm cells, of given radius\n" \
+      " 3. Randomly located storm cells but specified mean radius and mean location\n" \
+      " 4. Randomly located storm cells, specifed dominant radius, location random.\n";
       ReportFatalError( "Unrecognized storm model code.\n" );
   }
 }

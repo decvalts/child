@@ -87,7 +87,8 @@ protected:
     enum kStormType_t {
         kStaticStormCell = 1,
         kRandomStormCell = 2,
-        kWeightedRandomStormCell = 3
+        kWeightedRandomStormCell = 3,
+        kDominantStormCellSize = 4
     };
     /// @brief Variable for the static storm type production method - DV
     /// @return A kStormType_t enumerator
